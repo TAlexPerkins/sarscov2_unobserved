@@ -1,14 +1,13 @@
 # sarscov2_unobserved
-Estimating unobserved SARS-CoV-2 infections in the United States
+This repository contains code to reproduce results from the following pre-print
 
-The purpose of this repository is to make code and data available that were used in the analysis described in the following pdf.
-
+TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek **Estimating unobserved SARS-CoV-2 infections in the United States**
 http://perkinslab.weebly.com/uploads/2/5/6/2/25629832/perkins_etal_sarscov2.pdf
 
-The authors of this work are exhausted after working very hard to finish this analysis and write the manuscript. After we take a quick break to get some rest, we will clean up the code underlying the results in our manuscript and update this repository.
+### License
+This code is being released under the MIT License.
 
-In the meantime, you can find a precursor of our model in the following repository. The basics of how the model works are captured by this repository, although a number of important updates occurred between posting this initial code on March 12 and the preprint on March 15.
+### Overview
+Contents of this repository are organized according to code, data, results, and plots. All plots and results shown in the main text and supplementary material are generated in script_main.R and script_supplement.R respectively, with the exception of the sensitivity analyses. Folders for code, data, results, and plots related to the sensitivity analysis described in the supplemental text are located in a sensitivity subfolder within each of those folders.
 
-https://github.com/TAlexPerkins/sarscov2_unobserved_example
-
-Stay tuned...
+All code for the analysis featured in the main document was written in the R language (version 3.5.2) and was executed on a Lenovo Thinkpad running Linux (PureOS 9.0). The sensitivity analyses were written in R (version 3.6.2) and run on a Linux cluster. At the time the research was done, all R packages used in this analysis were available on CRAN and were straightforward to install and load.
