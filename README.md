@@ -1,4 +1,4 @@
-﻿# sarscov2_unobserved[a]
+﻿# sarscov2_unobserved
 
 
 This repository contains code to reproduce results from the following pre-print
@@ -35,13 +35,3 @@ The results and plots for the sensitivity analysis can be recreated by running t
    1. Input: sensitivity_sims_XX.rda
 7. multiple_pDetect_ts.R: Creates plots of the probability of detecting a local symptomatic infection over time for all 18 parameter sensitivity scenarios
    1. Input: sensitivity_sims_XX.rda
-
-
-
-
-
-
-[a]Something about like this is what I would like to see
-
-
-https://github.com/TAlexPerkins/TimeSeriesSpatialScale
