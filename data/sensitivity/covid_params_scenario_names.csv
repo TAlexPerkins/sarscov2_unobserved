@@ -1,0 +1,19 @@
+PrAsymptomatic_alpha,Variable,Scenario,Level,Name
+181.8993,NA,Default,Middle,Baseline
+191.1527,PrAsymp,Low,Low,Asymptomatic probability - Low
+106.0505,PrAsymp,High,High,Asymptomatic probability - High
+181.8993,R0,Low,Low,R0 - Low
+181.8993,R0,High,High,R0 - High
+181.8993,k,Low,High,Overdispersion - High
+181.8993,k,High,Middle,Overdispersion - Moderate
+181.8993,Rep_delay,Low,Low,Reporting delay - Low
+181.8993,Rep_delay,High,High,Reporting delay - High
+181.8993,PrDeath,Low,Low,CFR - Low
+181.8993,PrDeath,High,High,CFR - High
+181.8993,Serial_Int,Low,Low,Serial interval - Low
+181.8993,Serial_Int,High,High,Serial interval - High
+181.8993,Inc_Period,Low,Low,Incubation period - Low
+181.8993,Inc_Period,High,High,Incubation period - High
+181.8993,Time_Death,Low,Low,Time to death - Low
+181.8993,Time_Death,High,High,Time to death - High
+181.8993,Import,Incid,Low,Importation - Fit to international incidence
