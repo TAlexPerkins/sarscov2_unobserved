@@ -19,22 +19,22 @@ All code for the analysis featured in the main text was written in the R languag
 ### Sensitivity analysis
 The results and plots for the sensitivity analysis can be recreated by running the following scripts in the code/sensitivity subfolder:
 1. script_crc_estimate_parameter_sensitivity.R: This script runs a sweep of the AsympRfraction and parameters for each of 18 different parameter scenarios and calculate log likelihoods.
-   1. Input: scenario run number
-   2. Output: mle_local_run-number.rda object containing likelihood values
+   1. Input: scenario run number (referred to as XX in input/output filenames)
+   2. Output: mle_local_XX.rda object containing likelihood values
 2. parameter_profiles_sensitivity_analysis.R: This script uses the log likelihoods from each parameter sweep, uses bic.grid to create a modified log likelihood surface, and then samples from that surface to get posteriors for the two estimated parameters.
-   1. Input: mle_local_run-number.rda
-   2. Output: parameter_estimates_posterior_run-number.rda
+   1. Input: mle_local_XX.rda
+   2. Output: parameter_estimates_posterior_XX.rda
 3. bic_profile_plots.R: Uses output files from step 2 to create hexbin plots of joint estimated parameter posteriors
-   1. Input: parameter_estimates_posterior_run-number.rda
+   1. Input: parameter_estimates_posterior_XX.rda
 4. Script_crc_params_sensitivity_fit. R: Script using the parameter posteriors to simulate infections, deaths, etc for each of 18 scenarios
-   1. Input: parameter_estimates_posterior_run-number.rda
-   2. Output: sensitivity_sims_run-number.rda
+   1. Input: parameter_estimates_posterior_XX.rda
+   2. Output: sensitivity_sims_XX.rda
 5. combine_sim_results_fit_import.R: Creates summary statistics for cumulative infections and plots for all 18 parameter sensitivity scenarios
-   1. Input: sensitivity_sims_run-number.rda
+   1. Input: sensitivity_sims_XX.rda
 6. combine_sim_results_ratio_deaths.R: Creates summary statistics and plots of deaths compared expected after versus before March 13 for all 18 parameter sensitivity scenarios
-   1. Input: sensitivity_sims_run-number.rda
+   1. Input: sensitivity_sims_XX.rda
 7. multiple_pDetect_ts.R: Creates plots of the probability of detecting a local symptomatic infection over time for all 18 parameter sensitivity scenarios
-   1. Input: sensitivity_sims_run-number.rda[b]
+   1. Input: sensitivity_sims_XX.rda
 
 
 
@@ -45,4 +45,3 @@ The results and plots for the sensitivity analysis can be recreated by running t
 
 
 https://github.com/TAlexPerkins/TimeSeriesSpatialScale
-[b]You should see what will be required to make it appear how you want it in markdown +smoore15@nd.edu
