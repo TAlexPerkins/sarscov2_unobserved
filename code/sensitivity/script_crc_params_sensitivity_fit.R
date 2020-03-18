@@ -139,7 +139,6 @@ if(param_run$Variable=="Import"&param_run$Scenario=="Incid"){
         1,
         prob=PrImportedInfections,
         replace=T)
-    
     import.when=sample(
       1:ncol(ts.natl),
       imports,

@@ -151,6 +151,7 @@ for(ii in 1:nrow(params.gridded)){
             0:(maxUS-sum(num.CF)),
             num.CF[1],num.CF[2]),
           prob = c(sum(propns.ASCF[icnt,1:2]),propns.ASCF[icnt,3:4]))
+
       imports =
         sample(
           sum(num.CF):maxUS,

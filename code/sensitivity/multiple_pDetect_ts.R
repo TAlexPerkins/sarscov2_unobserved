@@ -6,6 +6,14 @@ library(boot)
 setwd("../results/sensitivity")
 rfiles=list.files(pattern="sensitivity_sims_")
 
+logit = function(x){
+  return(log(x / (1-x)))
+}
+
+inv.logit = function(x){
+  return(exp(x) / (1 + exp(x)))
+}
+
 params_dat=read.csv(file="../../data/sensitivity/covid_params_estimate.csv",header=T,as.is = T)
 dsim=1 #Default sim
 
