@@ -3,10 +3,8 @@
 
 This repository contains code to reproduce results from the following pre-print
 
+TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek (2020) **Estimating unobserved SARS-CoV-2 infections in the United States**. *medRxiv* doi:[10.1101/2020.03.15.20036582](https://www.medrxiv.org/content/10.1101/2020.03.15.20036582v1)
 
-**Estimating unobserved SARS-CoV-2 infections in the United States**
-TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek
-http://perkinslab.weebly.com/uploads/2/5/6/2/25629832/perkins_etal_sarscov2.pdf
 
 
 ### License
