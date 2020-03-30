@@ -103,7 +103,6 @@ tmp[as.numeric(names(deaths.US.imported))] = deaths.US.imported
 deaths.US.imported = tmp
 rm(tmp)
 deaths.US.local = pmax(0, deaths.US.total - deaths.US.imported)
-deaths.US.total = sum(deaths.US.local)
 
 # sample replicates of how many infections have been imported into the US
 maxUS = 2e4
@@ -151,8 +150,8 @@ if(param_run$Variable=="Import"&param_run$Scenario=="Incid"){
   import.doy=foreach(icnt = 1:replicates,.packages='mc2d') %dopar%{
     PrImportedInfections = 
       dmultinomial(
-        x = cbind(
-          0:(maxUS-sum(num.CF)),
+        x = cbind( 
+         0:(maxUS-sum(num.CF)),
           num.CF[1],num.CF[2]),
         prob = c(sum(propns.ASCF[icnt,1:2]),propns.ASCF[icnt,3:4]))
     imports =

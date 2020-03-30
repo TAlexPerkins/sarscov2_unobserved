@@ -28,7 +28,7 @@ param_run=param_grid[run_num,]
 # negative log likleihood
 ll.localDeaths = function(local_in, propns.ASCF_in){
   
-  log(max(1e-300,mean(dbinom(x = deaths.US.total,
+  log(max(1e-300,mean(dbinom(x = cum.deaths.US.total,
                   size = unlist(lapply(local_in,sum)),
                   prob = propns.ASCF_in, log = F))))
 }
@@ -109,7 +109,7 @@ tmp[as.numeric(names(deaths.US.imported))] = deaths.US.imported
 deaths.US.imported = tmp
 rm(tmp)
 deaths.US.local = pmax(0, deaths.US.total - deaths.US.imported)
-deaths.US.total = sum(deaths.US.local)
+cum.deaths.US.total = sum(deaths.US.local)
 
 # sample replicates of how many infections have been imported into the US
 maxUS = 2e4
