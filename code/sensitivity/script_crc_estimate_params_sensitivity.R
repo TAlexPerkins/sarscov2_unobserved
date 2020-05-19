@@ -130,7 +130,8 @@ for(ii in 1:nrow(params.gridded)){
   # sample from uncertainty about proportions of infection outcomes
   propns.ASCF = cbind(
     rbeta(replicates,param_run$PrAsymptomatic_alpha,param_run$PrAsymptomatic_beta),
-    rbeta(replicates,param_run$PrDeathSymptom_alpha,param_run$PrDeathSymptom_beta))
+    rnorm(replicates,param_run$PrDeathSymptom_mean,param_run$PrDeathSymptom_sd))
+  propns.ASCF[propns.ASCF<0]=0
   
   propns.ASCF = cbind(
     propns.ASCF[,1],
@@ -138,6 +139,38 @@ for(ii in 1:nrow(params.gridded)){
     (1-propns.ASCF[,1]) * params.gridded$PrCaseSymptom.trav[ii] * (1-propns.ASCF[,2]),
     (1-propns.ASCF[,1]) * propns.ASCF[,2])
   propns.ASCF.list[[ii]]=propns.ASCF
+
+  #import
+  R.reps = rnorm(replicates,param_run$R_mean,
+                 param_run$R_sd)
+  R.reps[R.reps<0]=0
+  if (!is.na(param_run$inc_shape_sd)) {
+    ip.shape.reps = rnorm(replicates, param_run$inc_shape_mean,
+                          param_run$inc_shape_sd)
+    ip.shape.reps[ip.shape.reps<0]=1e-10
+  } else {
+    ip.shape.reps = rep(param_run$inc_shape_mean, replicates)
+  }
+  if (!is.na(param_run$inc_scale_sd)) {
+    ip.scale.reps = rnorm(replicates, param_run$inc_scale_mean,
+                          param_run$inc_scale_sd)
+    ip.scale.reps[ip.scale.reps<0]=1e-10
+  } else {
+    ip.scale.reps = rep(param_run$inc_scale_mean, replicates)
+  }
+  k.mean = param_run$k_mean
+  k.lower = param_run$k_lower
+  k.upper = param_run$k_upper
+  if (!(is.na(k.lower) | is.na(k.upper))) {
+    k.meanlogs = seq(-10,log(k.mean),0.01)
+    k.sdlogs = sqrt(2*(log(k.mean) - k.meanlogs))
+    ind = which.min(sqrt((qlnorm(0.025,k.meanlogs,k.sdlogs)-k.lower)^2
+                         + (qlnorm(0.975,k.meanlogs,k.sdlogs)-k.upper)^2))
+    k.reps = rlnorm(replicates,k.meanlogs[ind],k.sdlogs[ind])
+  } else {
+    k.reps = rep(k.mean,replicates)
+  }
+
   # sample imported infections
   imports = numeric(length=replicates)
   import.doy = list()

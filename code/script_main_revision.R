@@ -143,22 +143,36 @@ propns.ASCF = cbind(
 
 # sample from uncertainty of parameters that we have uncertainty ranges of
 R.reps = rnorm(replicates,parameters["R",1],
-               diff(as.numeric(parameters["R",2:3]))/1.96/2)
+               diff(as.numeric(parameters["R",2:3]))/3.92)
 R.reps[R.reps<0]=0
-ip.shape.reps = rnorm(replicates, parameters["incubation_shape",1],
-                      diff(as.numeric(parameters["incubation_shape",2:3]))/3.92)
-ip.shape.reps[ip.shape.reps<0]=1e-10
-ip.scale.reps = rnorm(replicates, parameters["incubation_scale",1],
-                      diff(as.numeric(parameters["incubation_scale",2:3]))/3.92)
-ip.scale.reps[ip.scale.reps<0]=1e-10
+
+if (!any(is.na(parameters["incubation_shape",2:3]))) {
+    ip.shape.reps = rnorm(replicates, parameters["incubation_shape",1],
+                          diff(as.numeric(parameters["incubation_shape",2:3]))/3.92)
+    ip.shape.reps[ip.shape.reps<0]=1e-10
+} else {
+    ip.shape.reps = rep(parameters["incubation_scale",1], replicates)
+}
+if (!any(is.na(parameters["incubation_scale",2:3]))) {
+    ip.scale.reps = rnorm(replicates, parameters["incubation_scale",1],
+                          diff(as.numeric(parameters["incubation_scale",2:3]))/3.92)
+    ip.scale.reps[ip.shape.reps<0]=1e-10
+} else {
+    ip.scale.reps = rep(parameters["incubation_scale",1], replicates)
+}
+
 k.mean = parameters["k",1]
 k.lower = parameters["k",2]
 k.upper = parameters["k",3]
-k.meanlogs = seq(-10,log(k.mean),0.01)
-k.sdlogs = sqrt(2*(log(k.mean) - k.meanlogs))
-ind = which.min(sqrt((qlnorm(0.025,k.meanlogs,k.sdlogs)-k.lower)^2
-                     + (qlnorm(0.975,k.meanlogs,k.sdlogs)-k.upper)^2))
-k.reps = rlnorm(replicates,k.meanlogs[ind],k.sdlogs[ind])
+if (!(is.na(k.lower) | is.na(k.upper))) {
+    k.meanlogs = seq(-10,log(k.mean),0.01)
+    k.sdlogs = sqrt(2*(log(k.mean) - k.meanlogs))
+    ind = which.min(sqrt((qlnorm(0.025,k.meanlogs,k.sdlogs)-k.lower)^2
+                         + (qlnorm(0.975,k.meanlogs,k.sdlogs)-k.upper)^2))
+    k.reps = rlnorm(replicates,k.meanlogs[ind],k.sdlogs[ind])
+} else {
+    k.reps = rep(k.mean,replicates)
+}
 
 # draw samples of the number of imported infections
 imports = numeric(length=replicates)
