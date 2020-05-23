@@ -248,14 +248,14 @@ for(ii in 1:nrow(params.gridded)){
   # simulate local transmission for each imported case draw
   local[[ii]] = foreach(icnt = 1:replicates) %dopar% {
     simOutbreak(import.doy[[icnt]],
-                R=param_run$r_val,
-                k=param_run$k_val,
+                R=R.reps[icnt],
+                k=k.reps[icnt],
                 si_mean=param_run$serial_int_mean,
                 si_sd = param_run$serial_int_sd,
                 report_delay_shape = param_run$rep_delay_shape,
                 report_delay_rate = param_run$rep_delay_rate,
-                inc_shape = param_run$inc_shape,
-                inc_scale = param_run$inc_scale,
+                inc_shape = ip.shape.reps[icnt],
+                inc_scale = ip.scale.reps[icnt],
                 symp_to_death_mean = param_run$time_death_mean,
                 symp_to_death_sd = param_run$time_death_sd,
                 asympProp=propns.ASCF[icnt,1],
