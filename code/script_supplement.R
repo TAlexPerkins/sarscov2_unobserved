@@ -305,9 +305,6 @@ load("../results/baseline_projections.rda",verbose=T)
 # produce plots and results for all supplementary text figures 
 #=============================================================================#
 
-# set figure margins
-par(mar=c(4,5,1,1))
-
 # Figure S1 plot reporting delay distribution
 pdf("../plots/gamma_reporting_delay.pdf", width=4, height=4, pointsize=10)
 h = hist(data.delay, plot=F)
@@ -370,9 +367,21 @@ for (smoothSpline in c(FALSE, TRUE)) {
     polygon(
         c(as.Date('2019-12-31') + 1:ncol(p.mat),
           rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+        c(apply(p.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
+          rev(apply(p.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+        border=NA,col=rgb(0,0,0,0.25))
+    polygon(
+        c(as.Date('2019-12-31') + 1:ncol(p.mat),
+          rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
         c(apply(p.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
           rev(apply(p.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
-        border=NA,col=rgb(0,0,0,0.25))
+        border=NA,col=rgb(0,0,0,0.15))
+    ## for (ii in 1:nrow(p.mat)) {
+    ##     lines(
+    ##         as.Date('2019-12-31') + 1:ncol(p.mat),
+    ##         p.mat[ii,],
+    ##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
+    ## }
     mtext(ifelse(smoothSpline,"B","A"),side=3,line=0, 
        at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
        cex=1.2)
@@ -408,7 +417,7 @@ legend("topleft", col=c("black","red", "blue"), lty=c(0,1,1),#fill=c("grey",NA,N
        bty="n", lwd=2)
 dev.off()
 
-## Figure S? p.mat histogram
+## Figure S4 p.mat histogram
 pdf('../plots/rho_local_histogram.pdf',
     ##width=4.5,height=13.8, pointsize=14)
     width=4.8,height=4.8, pointsize=14)
@@ -417,3 +426,12 @@ hist(10*p.mat[,ncol(p.mat)],col='gray',
      ylab='Proportion of simulations',main='',las=1,freq=F,xaxt="n")
 axis(1,at=seq(0,10,2),labels=seq(0,1,0.2))
 dev.off()
+
+## Compare predicted cases with actual
+cases.mat.new = t(matrix(
+  unlist(lapply(local.predict, function(x) x$cases[1:length(local[[1]]$cases)])),
+  length(local[[1]]$cases),
+  replicates))
+det.cases.mat.obs = rbinom(length(cases.mat.new), as.vector(cases.mat.new), rowSums(propns.ASCF[,2:4])*p.mat)
+det.cases.mat = matrix(det.cases.mat.obs, replicates, ncol(cases.mat.new))
+quantile(apply(det.cases.mat,1,function(ii)sum(ii,na.rm=T)),c(0.025,0.5, 0.975))

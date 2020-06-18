@@ -305,9 +305,6 @@ load("../results/baseline_projections.rda",verbose=T)
 # produce plots and results for all main text figures 
 #=============================================================================#
 
-# set figure margins
-par(mar=c(4,5,1,1))
-
 # Infections and imports results - processing
 local.mat = t(matrix(
   unlist(lapply(local, function(x) x$daily)),
@@ -345,24 +342,24 @@ plot(
   ylim=c(1,quantile(local.mat[,ncol(local.mat)],0.975)),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
   xlim=as.Date('2019-12-31') + c(31,ncol(local.mat)),
   xlab='Date',ylab='Infections',main='', log="y")
-for (ii in 1:nrow(local.mat)) {
-    lines(
-        as.Date('2019-12-31') + 31:ncol(local.mat),
-        local.mat[ii,31:ncol(local.mat)],
-        col=rgb(0,0,0,0.1),lwd=0.25,type='l')
-}
-## polygon(
-##   c(as.Date('2019-12-31') + 1:ncol(local.mat),
-##     rev(as.Date('2019-12-31') + 1:ncol(local.mat))),
-##   c(apply(local.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
-##     rev(apply(local.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
-##   border=NA,col=rgb(0,0,0,0.25))
-## polygon(
-##   c(as.Date('2019-12-31') + 1:ncol(local.mat),
-##     rev(as.Date('2019-12-31') + 1:ncol(local.mat))),
-##   c(apply(local.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
-##     rev(apply(local.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
-##   border=NA,col=rgb(0,0,0,0.15))
+## for (ii in 1:nrow(local.mat)) {
+##     lines(
+##         as.Date('2019-12-31') + 31:ncol(local.mat),
+##         local.mat[ii,31:ncol(local.mat)],
+##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
+## }
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(local.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(local.mat))),
+  c(apply(local.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
+    rev(apply(local.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.25))
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(local.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(local.mat))),
+  c(apply(local.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
+    rev(apply(local.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.15))
 mtext("B",side=3,line=0, 
        at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
        cex=1.2)
@@ -413,6 +410,7 @@ low.p+as.Date('2019-12-31')
 apply(p.mat,2,function(x)quantile(x,c(0.025,0.5,0.975),na.rm=T))[,low.p]
 apply(p.mat,2,function(x)quantile(x,c(0.025,0.5,0.975),na.rm=T))[,length(cases.US.local)]
 quantile(rowSums(ifelse(p.mat < 0.2,1,0),na.rm=T), c(0.025,0.5,0.975))
+quantile(rowSums(ifelse(p.mat < 0.1,1,0),na.rm=T), c(0.025,0.5,0.975))
 # obtain correlations of p.mat and testing
 totalTestsPerDay = c(rep(0, min(testing$Day)-1),
                      testing$Total[1:which(testing$Day==ncol(p.mat))])
@@ -438,24 +436,24 @@ plot(
   xlim=as.Date('2019-12-31') + c(31,ncol(p.mat)),
   xlab='Date',ylab=expression('Symptomatics reporting ('*rho[local]*')'),
   main='')
-## polygon(
-##   c(as.Date('2019-12-31') + 1:ncol(p.mat),
-##     rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
-##   c(apply(p.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
-##     rev(apply(p.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
-##   border=NA,col=rgb(0,0,0,0.25))
-## polygon(
-##   c(as.Date('2019-12-31') + 1:ncol(p.mat),
-##     rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
-##   c(apply(p.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
-##     rev(apply(p.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
-##   border=NA,col=rgb(0,0,0,0.15))
-for (ii in 1:nrow(det.cases.mat)) {
-    lines(
-        as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-        p.mat[ii,],
-        col=rgb(0,0,0,0.1),lwd=0.25,type='l')
-}
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(p.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+  c(apply(p.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
+    rev(apply(p.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.25))
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(p.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+  c(apply(p.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
+    rev(apply(p.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.15))
+## for (ii in 1:nrow(p.mat)) {
+##     lines(
+##         as.Date('2019-12-31') + 1:ncol(p.mat),
+##         p.mat[ii,],
+##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
+## }
 par(new = TRUE)
 plot(as.Date('2019-12-31') + testing$Day[testing$Complete],
      testing$Total[testing$Complete], type="l", col="red",
@@ -483,24 +481,24 @@ plot(
   col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
   xlim=as.Date('2019-12-31') + c(31,ncol(det.cases.mat)),
   xlab='Date',ylab='Reported cases',main='')
-## polygon(
-##   c(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-##     rev(as.Date('2019-12-31') + 1:ncol(det.cases.mat))),
-##   c(apply(det.cases.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
-##     rev(apply(det.cases.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
-##   border=NA,col=rgb(0,0,0,0.25))
-## polygon(
-##   c(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-##     rev(as.Date('2019-12-31') + 1:ncol(det.cases.mat))),
-##   c(apply(det.cases.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
-##     rev(apply(det.cases.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
-##   border=NA,col=rgb(0,0,0,0.15))
-for (ii in 1:nrow(det.cases.mat)) {
-    lines(
-        as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-        det.cases.mat[ii,],
-        col=rgb(0,0,0,0.1),lwd=0.25,type='l')
-}
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(det.cases.mat))),
+  c(apply(det.cases.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
+    rev(apply(det.cases.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.25))
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(det.cases.mat))),
+  c(apply(det.cases.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
+    rev(apply(det.cases.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.15))
+## for (ii in 1:nrow(det.cases.mat)) {
+##     lines(
+##         as.Date('2019-12-31') + 1:ncol(det.cases.mat),
+##         det.cases.mat[ii,],
+##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
+## }
 legend("topleft",lty=rep("solid",2),lwd=2,
        legend=c("Data", "Model"),col=c("red","black"),
        bty='n') 
@@ -537,7 +535,7 @@ quantile(rowSums(death.mat),c(0.025,0.5,0.975))
 sum(deaths.US.local)
 sum(death.mat[,death.day.min:death.day.max])/sum(death.mat)
 quantile(rowSums(future.death.mat),c(0.025,0.5,0.975))
-quantile(rowSums(future.death.mat)/rowSums(death.mat),c(0.025,0.5,0.975),na.rm=T)
+quantile(rowSums(future.death.mat)/sum(deaths.US.local),c(0.025,0.5,0.975),na.rm=T)
 
 # Figure 3
 # plot future deaths, assuming transmission stops on March 12
@@ -558,22 +556,22 @@ axis(side = 1, at = times[which(times %in% as.Date("2020-02-01"): as.Date("2020-
 axis(side = 1, at = times[which(times %in% as.Date("2020-02-01"): as.Date("2020-05-15"))][month_starts + 15], tick = F,
      labels = c('Feb', 'Mar', 'Apr', 'May'))
 lines(times, death.predict.median[1:time.max], col="black", lwd=2)
-## polygon(
-##   c(times, rev(times)),
-##   c(pmax(0.1,death.predict.75[1:time.max]),
-##     pmax(0.1,rev(death.predict.25[1:time.max]))),
-##   border=NA,col=rgb(0,0,0,alpha=0.25))
-## polygon(
-##   c(times, rev(times)),
-##   c(pmax(0.1,death.predict.975[1:time.max]),
-##     pmax(0.1,rev(death.predict.025[1:time.max]))),
-##   border=NA,col=rgb(0,0,0,alpha=0.15))
-for (ii in 1:nrow(local.predict.death)) {
-    lines(
-        times,
-        local.predict.death[ii,1:length(times)],
-        col=rgb(0,0,0,0.1),lwd=0.25,type='l')
-}
+polygon(
+  c(times, rev(times)),
+  c(pmax(0.1,death.predict.75[1:time.max]),
+    pmax(0.1,rev(death.predict.25[1:time.max]))),
+  border=NA,col=rgb(0,0,0,alpha=0.25))
+polygon(
+  c(times, rev(times)),
+  c(pmax(0.1,death.predict.975[1:time.max]),
+    pmax(0.1,rev(death.predict.025[1:time.max]))),
+  border=NA,col=rgb(0,0,0,alpha=0.15))
+## for (ii in 1:nrow(local.predict.death)) {
+##     lines(
+##         times,
+##         local.predict.death[ii,1:length(times)],
+##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
+## }
 abline(v=as.Date("2020-03-12"), lty="dashed")
 legend("topleft",lty=rep("solid",2),lwd=2,
        legend=c("Data", "Model"),col=c("red","black"),
