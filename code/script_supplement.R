@@ -105,19 +105,21 @@ deaths.US.local = pmax(0, deaths.US.total - deaths.US.imported)
 #=============================================================================#
 # simulate imported infections
 #=============================================================================#
-
+parameters = read.csv("../data/parameters.csv",sep=',',header=T,row.names=1)
 # sample replicates of how many infections have been imported into the US
 maxUS = 2e4
 rangeUS = sum(yesUS$international_traveler>0,na.rm=T):maxUS
 # estimate for asymptomatic proportion based on
 # https://www.medrxiv.org/content/10.1101/2020.02.20.20025866v2
 PrAsymptomatic = exp(optim(par=c(0,0),fn=function(par){
-  sum((
-    qbeta(c(0.5,0.025,0.975),exp(par[1]),exp(par[2])) -
-      c(0.179,0.155,0.202)) ^ 2)})$par)
-# estimate for proportion of symptomatic infections resulting in death based on
-# http://weekly.chinacdc.cn/en/article/id/e53946e2-c6c4-41e9-9a9b-fea8db1a8f51
-PrDeathSymptom = c(1+1023,1+44672-1023)
+    sum((
+        c(exp(par[1])/(exp(par[1])+exp(par[2])),
+          qbeta(c(0.025,0.975),exp(par[1]),exp(par[2]))) -
+        parameters["asymptomatic",1:3]) ^ 2)})$par)
+
+# distribution parameters for death
+PrDeathSymptom = c(parameters["cfr",1],
+                   diff(as.numeric(parameters["cfr",2:3]))/1.96/2)
 
 # set values of unknown parameters
 # note that these values seem to maximize the probability of the cumulative
@@ -131,12 +133,78 @@ asympRFraction = asympRFraction_posterior[indices]
 # sample from uncertainty about proportions of infection outcomes
 propns.ASCF = cbind(
   rbeta(replicates,PrAsymptomatic[1],PrAsymptomatic[2]),
-  rbeta(replicates,PrDeathSymptom[1],PrDeathSymptom[2]))
+  rnorm(replicates,PrDeathSymptom[1],PrDeathSymptom[2]))
+propns.ASCF[propns.ASCF<0]=0
 propns.ASCF = cbind(
   propns.ASCF[,1],
   (1-propns.ASCF[,1]) * (1-PrCaseSymptom.trav) * (1-propns.ASCF[,2]),
   (1-propns.ASCF[,1]) * PrCaseSymptom.trav * (1-propns.ASCF[,2]),
   (1-propns.ASCF[,1]) * propns.ASCF[,2])
+
+# sample from uncertainty of parameters that we have uncertainty ranges of
+R.reps = rnorm(replicates,parameters["R",1],
+               diff(as.numeric(parameters["R",2:3]))/3.92)
+R.reps[R.reps<0]=0
+
+if (!any(is.na(parameters["incubation_shape",2:3]))) {
+    ip.shape.reps = rnorm(replicates, parameters["incubation_shape",1],
+                          diff(as.numeric(parameters["incubation_shape",2:3]))/3.92)
+    ip.shape.reps[ip.shape.reps<0]=1e-10
+} else {
+    ip.shape.reps = rep(parameters["incubation_scale",1], replicates)
+}
+if (!any(is.na(parameters["incubation_scale",2:3]))) {
+    ip.scale.reps = rnorm(replicates, parameters["incubation_scale",1],
+                          diff(as.numeric(parameters["incubation_scale",2:3]))/3.92)
+    ip.scale.reps[ip.shape.reps<0]=1e-10
+} else {
+    ip.scale.reps = rep(parameters["incubation_scale",1], replicates)
+}
+
+k.mean = parameters["k",1]
+k.lower = parameters["k",2]
+k.upper = parameters["k",3]
+if (!(is.na(k.lower) | is.na(k.upper))) {
+    k.meanlogs = seq(-10,log(k.mean),0.01)
+    k.sdlogs = sqrt(2*(log(k.mean) - k.meanlogs))
+    ind = which.min(sqrt((qlnorm(0.025,k.meanlogs,k.sdlogs)-k.lower)^2
+                         + (qlnorm(0.975,k.meanlogs,k.sdlogs)-k.upper)^2))
+    k.reps = rlnorm(replicates,k.meanlogs[ind],k.sdlogs[ind])
+} else {
+    k.reps = rep(k.mean,replicates)
+}
+
+if (!any(is.na(parameters["serial_mean",2:3]))) {
+    serial.mean.reps = rnorm(replicates, parameters["serial_mean",1],
+                          diff(as.numeric(parameters["serial_mean",2:3]))/3.92)
+    serial.mean.reps[ip.shape.reps<0]=1e-10
+} else {
+    serial.mean.reps = rep(parameters["serial_mean",1], replicates)
+}
+
+if (!any(is.na(parameters["serial_sd",2:3]))) {
+    serial.sd.reps = rnorm(replicates, parameters["serial_sd",1],
+                          diff(as.numeric(parameters["serial_sd",2:3]))/3.92)
+    serial.sd.reps[ip.shape.reps<0]=1e-10
+} else {
+    serial.sd.reps = rep(parameters["serial_sd",1], replicates)
+}
+
+if (!any(is.na(parameters["onset_death_mean",2:3]))) {
+    onset_death.mean.reps = rnorm(replicates, parameters["onset_death_mean",1],
+                          diff(as.numeric(parameters["onset_death_mean",2:3]))/3.92)
+    onset_death.mean.reps[ip.shape.reps<0]=1e-10
+} else {
+    onset_death.mean.reps = rep(parameters["onset_death_mean",1], replicates)
+}
+
+if (!any(is.na(parameters["onset_death_sd",2:3]))) {
+    onset_death.sd.reps = rnorm(replicates, parameters["onset_death_sd",1],
+                          diff(as.numeric(parameters["onset_death_sd",2:3]))/3.92)
+    onset_death.sd.reps[ip.shape.reps<0]=1e-10
+} else {
+    onset_death.sd.reps = rep(parameters["onset_death_sd",1], replicates)
+}
 
 # draw samples of the number of imported infections
 imports = numeric(length=replicates)
@@ -190,20 +258,20 @@ for(ii in 1:replicates){
 local = foreach(ii = 1:replicates) %do% {
   simOutbreak(
     timeImport = import.doy[[ii]], # timing of each imported infection
-    R = 1.97, # reproduction number
-    k = 1e3, # dispersion parameter
-    si_mean = 4.56, # mean of serial interval distribution
-    si_sd = 0.95, # standard deviation of serial interval distribution
-    inc_shape = 1.88, # shape parameter of incubation period distribution
-    inc_scale = 7.97, # scale parameter of incubation period distribution
-    symp_to_death_mean = 14, # mean of time between symptom onset and death
-    symp_to_death_sd = 5.37, # std. dev. of time between symptom onset and death
+    R = R.reps[ii], # reproduction number
+    k = k.reps[ii], # dispersion parameter
+    si_mean = serial.mean.reps[ii], # mean of serial interval distribution
+    si_sd = serial.sd.reps[ii], # standard deviation of serial interval distribution
+    inc_shape = ip.shape.reps[ii], # shape parameter of incubation period distribution
+    inc_scale = ip.scale.reps[ii], # scale parameter of incubation period distribution
+    symp_to_death_mean = onset_death.mean.reps[ii], # mean of time between symptom onset and death
+    symp_to_death_sd = onset_death.sd.reps[ii], # std. dev. of time between symptom onset and death
     report_delay_shape = delay.shape.baseline, # shape parameter for delay between symptom and reporting
     report_delay_rate = delay.rate, # rate parameter for delay between symptom and reporting
     stopSimulationDay = length(cases.US.imported), # day of year since Jan 1 when simulation stops
     asympProp = propns.ASCF[ii,1], # proportion of infections that are asymptomatic
     asympRFraction = asympRFraction[ii], # relative infectiousness of asymptomatics
-    lnormFlag = F # toggles whether serial interval distribution is lognormal
+    lnormFlag = T # toggles whether serial interval distribution is lognormal
   )
 }
 
@@ -211,27 +279,27 @@ local = foreach(ii = 1:replicates) %do% {
 local.predict = foreach(ii = 1:replicates) %do% {
   simOutbreakR0Change(
     timeImport = import.doy[[ii]], # timing of each imported infection
-    R = 1.97, # reproduction number
-    k = 1e3, # dispersion parameter
-    si_mean = 4.56, # mean of serial interval distribution
-    si_sd = 0.95, # standard deviation of serial interval distribution
-    inc_shape = 1.88, # shape parameter of incubation period distribution
-    inc_scale = 7.97, # scale parameter of incubation period distribution
-    symp_to_death_mean = 14, # mean of time between symptom onset and death
-    symp_to_death_sd = 5.37, # std. dev. of time between symptom onset and death
+    R = R.reps[ii], # reproduction number
+    k = k.reps[ii], # dispersion parameter
+    si_mean = serial.mean.reps[ii], # mean of serial interval distribution
+    si_sd = serial.sd.reps[ii], # standard deviation of serial interval distribution
+    inc_shape = ip.shape.reps[ii], # shape parameter of incubation period distribution
+    inc_scale = ip.scale.reps[ii], # scale parameter of incubation period distribution
+    symp_to_death_mean = onset_death.mean.reps[ii], # mean of time between symptom onset and death
+    symp_to_death_sd = onset_death.sd.reps[ii], # std. dev. of time between symptom onset and death
     report_delay_shape = delay.shape.baseline, # shape parameter for delay between symptom and reporting
     report_delay_rate = delay.rate, # rate parameter for delay between symptom and reporting
     stopSimulationDay = 180, # day of year since Jan 1 when simulation stops
     asympProp = propns.ASCF[ii,1], # proportion of infections that are asymptomatic
     asympRFraction = asympRFraction[ii], # relative infectiousness of asymptomatics
-    lnormFlag = F, # toggles whether serial interval distribution is lognormal
+    lnormFlag = T, # toggles whether serial interval distribution is lognormal
     RChangeDay = length(cases.US.imported), # determines when R changes
     RChange = 0 # determines what R drops to at R0ChangeDay
   )
 }
 
 # load the following to generate the objects used to generate the figures in the paper
-load("../results/objects_used_in_paper.RData",verbose=T)
+load("../results/baseline_projections.rda",verbose=T)
 
 #=============================================================================#
 # produce plots and results for all supplementary text figures 
@@ -269,7 +337,7 @@ for (smoothSpline in c(FALSE, TRUE)) {
         beta.old=1
         for(jj in 1:ncol(cases.mat)){
             if(cases.mat[ii,jj]){
-                actual.cases = rbinom(1,cases.mat[ii,jj], sum(propns.ASCF[ii,2:3]))
+                actual.cases = rbinom(1,cases.mat[ii,jj], sum(propns.ASCF[ii,2:4]))
                 alpha.new = alpha.old+cases.US.local[jj]
                 beta.new = beta.old+actual.cases-cases.US.local[jj]
                 p.mat[ii,jj] =
@@ -340,28 +408,12 @@ legend("topleft", col=c("black","red", "blue"), lty=c(0,1,1),#fill=c("grey",NA,N
        bty="n", lwd=2)
 dev.off()
 
-# Figure S4 - compare actual cases with model predicted cases
-pdf('../plots/cases_daily_resample.pdf',width=5,height=4)
-p.mat.resample = apply(p.mat,2,function(x) sample(x,length(x),replace=T))
-det.cases.mat.obs = rbinom(length(cases.mat), as.vector(cases.mat), rowSums(propns.ASCF[,2:3])*p.mat.resample)
-det.cases.mat = matrix(det.cases.mat.obs, replicates, ncol(cases.mat))
-plot(
-  as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-  apply(det.cases.mat,2,function(ii)median(ii,na.rm=T)),
-  ylim=c(0,800),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
-  xlim=as.Date('2019-12-31') + c(31,ncol(det.cases.mat)),
-  xlab='Date',ylab='Reported cases',main='')
-polygon(
-  c(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-    rev(as.Date('2019-12-31') + 1:ncol(det.cases.mat))),
-  c(apply(det.cases.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
-    rev(apply(det.cases.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
-  border=NA,col=rgb(0,0,0,0.25))
-legend("topleft",lty=rep("solid",2),lwd=2,
-       legend=c("Data", "Model"),col=c("red","black"),
-       bty='n') 
-lines(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
-      cases.US.local,
-      type='l',lwd=2,col=2,xaxs='i',yaxs='i',
-      xaxt='n',yaxt='n',xlab='',ylab='')
+## Figure S? p.mat histogram
+pdf('../plots/rho_local_histogram.pdf',
+    ##width=4.5,height=13.8, pointsize=14)
+    width=4.8,height=4.8, pointsize=14)
+hist(10*p.mat[,ncol(p.mat)],col='gray',
+     xlab=expression('Symptomatics reporting ('*rho[local]*')'),
+     ylab='Proportion of simulations',main='',las=1,freq=F,xaxt="n")
+axis(1,at=seq(0,10,2),labels=seq(0,1,0.2))
 dev.off()
