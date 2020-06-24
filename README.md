@@ -33,3 +33,12 @@ The results and plots for the sensitivity analysis can be recreated by running t
    1. Input: sensitivity_sims_XX.rda
 7. multiple_pDetect_ts.R: Creates plots of the probability of detecting a local symptomatic infection over time for all 18 parameter sensitivity scenarios
    1. Input: sensitivity_sims_XX.rda
+
+
+### Running the model
+To re-generate the figures and quantities detailed in the main text of the manuscript, simply run script_main.R. The model itself can take some time to run. To generate results without reruning the model, skip lines 258-299 and load saved model output in line 302.
+
+To generate results with an alternative parameterization, do the following:
+1. Input new parameterization in data/sensitivity/covid_param_estimates.csv and data/parameters.csv. To run just a single parameterization (i.e. no sensitivity analyses), enter just a single row in data/sensitivity/covid_param_estimates.csv.
+2. Run steps 1 and 2 of the sensitivity analysis sections. This generates the posterior distributions for the importation detection probability and relative infectiousness of asymptomatic individuals.
+3. Run script_main.R.
