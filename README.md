@@ -36,7 +36,7 @@ The results and plots for the sensitivity analysis can be recreated by running t
 
 
 ### Running the model
-To re-generate the figures and quantities detailed in the main text of the manuscript, simply run script_main.R. The model itself can take some time to run. To generate results without reruning the model, skip lines 258-299 and load saved model output in line 302.
+To re-generate the figures and quantities detailed in the main text of the manuscript, simply run script_main.R. The model itself can take some time to run. To re-generate results without re-running the model, skip lines 258-299 and load saved model output in line 302.
 
 To generate results with an alternative parameterization, do the following:
 1. Input new parameterization in data/sensitivity/covid_param_estimates.csv and data/parameters.csv. To run just a single parameterization (i.e. no sensitivity analyses), enter just a single row in data/sensitivity/covid_param_estimates.csv.
