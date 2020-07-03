@@ -417,15 +417,15 @@ legend("topleft", col=c("black","red", "blue"), lty=c(0,1,1),#fill=c("grey",NA,N
        bty="n", lwd=2)
 dev.off()
 
-## Figure S4 p.mat histogram
-pdf('../plots/rho_local_histogram.pdf',
-    ##width=4.5,height=13.8, pointsize=14)
-    width=4.8,height=4.8, pointsize=14)
-hist(10*p.mat[,ncol(p.mat)],col='gray',
-     xlab=expression('Symptomatics reporting ('*rho[local]*')'),
-     ylab='Proportion of simulations',main='',las=1,freq=F,xaxt="n")
-axis(1,at=seq(0,10,2),labels=seq(0,1,0.2))
-dev.off()
+## Figure S4 p.mat histogram - moved to main text
+## pdf('../plots/rho_local_histogram.pdf',
+##     ##width=4.5,height=13.8, pointsize=14)
+##     width=4.8,height=4.8, pointsize=14)
+## hist(10*p.mat[,ncol(p.mat)],col='gray',
+##      xlab=expression('Symptomatics reporting ('*rho[local]*')'),
+##      ylab='Proportion of simulations',main='',las=1,freq=F,xaxt="n")
+## axis(1,at=seq(0,10,2),labels=seq(0,1,0.2))
+## dev.off()
 
 ## Compare predicted cases with actual
 cases.mat.new = t(matrix(

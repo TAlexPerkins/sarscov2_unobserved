@@ -315,6 +315,7 @@ local.mat = t(matrix(
 quantile(PrCaseSymptom.trav_posterior,c(0.025, 0.5, 0.975))
 quantile(unlist(lapply(local,function(ll)ll$cum)),c(0.025,0.5,0.975))
 quantile(local.mat[,ncol(local.mat)],c(0.025,0.5,0.975))
+sum(sum(cases.US.local)<unlist(lapply(local,function(ll)ll$cum)))/nrow(local.mat)
 
 # Figure 1
 # plot distribution of cumulative infections
@@ -323,6 +324,7 @@ pdf('../plots/figure_1_cumulative_infections_and_infections_daily.pdf',
     width=9,height=5, pointsize=14)
 par(mfrow=c(1,2))
 plot.temp = log(unlist(lapply(local,function(ll)ll$cum)),base=10)
+hist(plot.temp,breaks=seq(2,10),plot=F)$density
 plot.temp = plot.temp[plot.temp <=8]
 hist(plot.temp,
      breaks=seq(2,8),col='gray',
@@ -373,6 +375,8 @@ cases.mat = t(matrix(
   length(local[[1]]$cases),
   replicates))
 p.mat = matrix(NA,nrow(cases.mat),ncol(cases.mat))
+cases.mat.obs = rbinom(length(cases.mat), as.vector(cases.mat), rowSums(propns.ASCF[,2:4]))
+cases.mat.obs = matrix(cases.mat.obs, replicates, ncol(cases.mat))
 for(ii in 1:nrow(cases.mat)){
   alpha.old=1
   beta.old=1
@@ -426,48 +430,45 @@ quantile(correlation.reduced,c(0.025,0.5,0.975),na.rm=T)
 # alongside numbers of tests administered in the US
 pdf('../plots/figure_2_symptomatic_daily_and_symptomatic_detected.pdf',
     ##width=4.5,height=13.8, pointsize=14)
-    width=9,height=4.8, pointsize=14)
-par(mfrow=c(1,2))
-par(mar = c(5, 4, 4, 4) + 0.3)
+    width=8,height=7, pointsize=14)
+par(mfrow=c(2,2))
+par(mar = c(4, 5, 1.5, 3) + 0.1,
+    oma = c(0, 0, 0, 0))
 plot(
-  as.Date('2019-12-31') + 1:ncol(p.mat),
-  apply(p.mat,2,function(ii)median(ii,na.rm=T)),
-  ylim=c(0,1),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
-  xlim=as.Date('2019-12-31') + c(31,ncol(p.mat)),
-  xlab='Date',ylab=expression('Symptomatics reporting ('*rho[local]*')'),
-  main='')
+  as.Date('2019-12-31') + 1:ncol(cases.mat),
+  apply(cases.mat.obs,2,function(ii)median(ii,na.rm=T)),
+  ylim=c(0,quantile(cases.mat.obs[,ncol(cases.mat)],0.75)),
+  col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
+  xlim=as.Date('2019-12-31') + c(31,ncol(cases.mat)),
+  xlab='Date',ylab='Symptomatic infections',main='')
 polygon(
-  c(as.Date('2019-12-31') + 1:ncol(p.mat),
-    rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
-  c(apply(p.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
-    rev(apply(p.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+  c(as.Date('2019-12-31') + 1:ncol(cases.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(cases.mat))),
+  c(apply(cases.mat.obs,2,function(ii)quantile(ii,0.25,na.rm=T)),
+    rev(apply(cases.mat.obs,2,function(ii)quantile(ii,0.75,na.rm=T)))),
   border=NA,col=rgb(0,0,0,0.25))
 polygon(
-  c(as.Date('2019-12-31') + 1:ncol(p.mat),
-    rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
-  c(apply(p.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
-    rev(apply(p.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
+  c(as.Date('2019-12-31') + 1:ncol(cases.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(cases.mat))),
+  c(apply(cases.mat.obs,2,function(ii)quantile(ii,0.025,na.rm=T)),
+    rev(apply(cases.mat.obs,2,function(ii)quantile(ii,0.975,na.rm=T)))),
   border=NA,col=rgb(0,0,0,0.15))
-## for (ii in 1:nrow(p.mat)) {
-##     lines(
-##         as.Date('2019-12-31') + 1:ncol(p.mat),
-##         p.mat[ii,],
-##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
-## }
-par(new = TRUE)
-plot(as.Date('2019-12-31') + testing$Day[testing$Complete],
-     testing$Total[testing$Complete], type="l", col="red",
-     axes=F, bty = "n", xlab = "", ylab = "",
-     xlim=as.Date('2019-12-31') + c(31,ncol(cases.mat)), lwd=2,
-     xaxs='i',yaxs='i')
-axis(side=4, at = pretty(range(testing$Total)), col="red", col.axis="red",las=1)
-mtext("Tests administered", side=4, line=3, lwd=2, col="red")        
-legend("topleft", col=c("red", "black"), lty="solid",
-       legend=c("Data", "Model"),
-       bty="n", lwd=2)
 mtext("A",side=3,line=0, 
-       at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
-       cex=1.2)
+      at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+      cex=1.2)
+lines(as.Date('2019-12-31') + 1:ncol(cases.mat),
+      cases.US.local, col="red",lwd=2)
+## par(new = TRUE)
+## plot(as.Date('2019-12-31') + 1:ncol(cases.mat),
+##      cases.US.local, type="l", col="red",
+##      axes=F, bty = "n", xlab = "", ylab = "",
+##      xlim=as.Date('2019-12-31') + c(31,ncol(cases.mat)), lwd=2,
+##      xaxs='i',yaxs='i')
+## axis(side=4, at = pretty(range(cases.US.local)), col="red", col.axis="red",las=1)
+## mtext("Reported cases", side=4, line=3, lwd=2, col="red")        
+legend("topleft", col=c("red", "black"), lty="solid",
+       legend=rev(c("Model", "Data")),
+       bty="n", lwd=c(2,2))
 cases.mat.new = t(matrix(
   unlist(lapply(local.predict, function(x) x$cases[1:length(local[[1]]$cases)])),
   length(local[[1]]$cases),
@@ -509,6 +510,52 @@ lines(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
 mtext("B",side=3,line=0, 
        at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
        cex=1.2)
+plot(
+  as.Date('2019-12-31') + 1:ncol(p.mat),
+  apply(p.mat,2,function(ii)median(ii,na.rm=T)),
+  ylim=c(0,1),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
+  xlim=as.Date('2019-12-31') + c(31,ncol(p.mat)),
+  xlab='Date',ylab=expression('Symptomatics reporting ('*rho[local]*')'),
+  main='')
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(p.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+  c(apply(p.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
+    rev(apply(p.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.25))
+polygon(
+  c(as.Date('2019-12-31') + 1:ncol(p.mat),
+    rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+  c(apply(p.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
+    rev(apply(p.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
+  border=NA,col=rgb(0,0,0,0.15))
+## for (ii in 1:nrow(p.mat)) {
+##     lines(
+##         as.Date('2019-12-31') + 1:ncol(p.mat),
+##         p.mat[ii,],
+##         col=rgb(0,0,0,0.1),lwd=0.25,type='l')
+## }
+par(new = TRUE)
+plot(as.Date('2019-12-31') + testing$Day[testing$Complete],
+     testing$Total[testing$Complete], type="l", col="red",
+     axes=F, bty = "n", xlab = "", ylab = "",
+     xlim=as.Date('2019-12-31') + c(31,ncol(cases.mat)), lwd=2,
+     xaxs='i',yaxs='i')
+axis(side=4, at = pretty(range(testing$Total)), col="red", col.axis="red",las=1)
+mtext("Tests administered", side=4, line=3, lwd=2, col="red")        
+legend("topleft", col=c("red", "black"), lty="solid",
+       legend=c("Data", "Model"),
+       bty="n", lwd=c(2,2))
+mtext("C",side=3,line=0, 
+       at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+      cex=1.2)
+hist(10*p.mat[,ncol(p.mat)],col='gray',
+     xlab=expression('Symptomatics reporting ('*rho[local]*') on March 12'),
+     ylab='Proportion of simulations',main='',las=1,freq=F,xaxt="n")
+axis(1,at=seq(0,10,2),labels=seq(0,1,0.2))
+mtext("D",side=3,line=0, 
+      at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+      cex=1.2)
 dev.off()
 
 # Deaths results - processing
