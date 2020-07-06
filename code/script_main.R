@@ -123,7 +123,7 @@ PrDeathSymptom = c(parameters["cfr",1],
 
 # set values of unknown parameters
 # note that these values seem to maximize the probability of the cumulative
-# deaths in the US as of March 8, 2020 predicted by the model
+# deaths in the US as of March 12, 2020 predicted by the model
 replicates = 1000
 load("../results/sensitivity/param_estimates_posterior_1.rda", verbose=T)
 indices = sample(1:length(PrCaseSymptom.trav_posterior), replicates, replace=TRUE)
@@ -221,6 +221,26 @@ for(ii in 1:replicates){
       1,
       prob=PrImportedInfections,
       replace=T)
+}
+
+# draw samples of the number of local infections with simple extrapolation
+num.CF.local = c(sum(cases.US.local),sum(deaths.US.local))
+local.simple = rep(NA,replicates)
+for(ii in 1:replicates){
+  PrLocalSimpleInfections =
+    dmultinomial(
+      x = cbind(
+        0:(maxUS-sum(num.CF.local)),
+        num.CF.local[1],num.CF.local[2]),
+      prob = c(sum(propns.ASCF[ii,1:2]),propns.ASCF[ii,3:4]))
+  if(sum(PrLocalSimpleInfections) > 0){
+    local.simple[ii] =
+      sample(
+        sum(num.CF.local):maxUS,
+        1,
+        prob=PrLocalSimpleInfections,
+        replace=T)
+  }
 }
 
 # draw samples of the day on which imported infections arrived
