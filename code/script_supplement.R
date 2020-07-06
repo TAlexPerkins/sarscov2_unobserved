@@ -298,7 +298,15 @@ local.predict = foreach(ii = 1:replicates) %do% {
   )
 }
 
-# load the following to generate the objects used to generate the figures in the paper
+## load local files for extreme values of R
+load("../results/local1.6.RData",verbose=T)
+local.lo = local
+load("../results/local2.7.RData",verbose=T)
+local.med = local
+load("../results/local3.9.RData",verbose=T)
+local.hi = local
+
+## load the following to generate the objects used to generate the figures in the paper
 load("../results/baseline_projections.rda",verbose=T)
 
 #=============================================================================#
@@ -435,3 +443,135 @@ cases.mat.new = t(matrix(
 det.cases.mat.obs = rbinom(length(cases.mat.new), as.vector(cases.mat.new), rowSums(propns.ASCF[,2:4])*p.mat)
 det.cases.mat = matrix(det.cases.mat.obs, replicates, ncol(cases.mat.new))
 quantile(apply(det.cases.mat,1,function(ii)sum(ii,na.rm=T)),c(0.025,0.5, 0.975))
+
+## Figure S?? Compare distribution of cases for fixed R values
+local.mat.lo = t(matrix(
+  unlist(lapply(local.lo, function(x) x$daily)),
+  length(local.lo[[1]]$daily),
+  replicates))
+local.mat.med = t(matrix(
+  unlist(lapply(local.med, function(x) x$daily)),
+  length(local.lo[[1]]$daily),
+  replicates))
+local.mat.hi = t(matrix(
+  unlist(lapply(local.hi, function(x) x$daily)),
+  length(local.hi[[1]]$daily),
+  replicates))
+
+pdf('../plots/supp_fig_r_comparison_caseloads.pdf',
+    width=13.5,height=5, pointsize=14)
+par(mfrow=c(1,3))
+plot.temp = log(unlist(lapply(local.lo,function(ll)ll$cum)),base=10)
+hist(plot.temp,breaks=seq(2,10),plot=F)$density
+plot.temp = plot.temp[plot.temp <=8]
+hist(plot.temp,
+     breaks=seq(2,8),col='gray',
+     xlab=expression('Cumulative infections (log'[10]*')'),
+     ylab='Proportion of simulations',main='',las=1,xaxt="n",freq=F)
+axis(1,at=seq(2,8,2),labels=c(expression(10^2),expression(10^4),
+                              expression(10^6),expression(10^8)))
+lines(log(rep(sum(cases.US.local),2),base=10),
+      c(0,replicates),
+      col='red',lwd=2)
+mtext("A",side=3,line=0, 
+       at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+       cex=1.2)
+plot.temp = log(unlist(lapply(local.med,function(ll)ll$cum)),base=10)
+hist(plot.temp,breaks=seq(2,10),plot=F)$density
+plot.temp = plot.temp[plot.temp <=8]
+hist(plot.temp,
+     breaks=seq(2,8),col='gray',
+     xlab=expression('Cumulative infections (log'[10]*')'),
+     ylab='Proportion of simulations',main='',las=1,xaxt="n",freq=F)
+axis(1,at=seq(2,8,2),labels=c(expression(10^2),expression(10^4),
+                              expression(10^6),expression(10^8)))
+lines(log(rep(sum(cases.US.local),2),base=10),
+      c(0,replicates),
+      col='red',lwd=2)
+mtext("B",side=3,line=0, 
+       at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+       cex=1.2)
+plot.temp = log(unlist(lapply(local.hi,function(ll)ll$cum)),base=10)
+hist(plot.temp,breaks=seq(2,10),plot=F)$density
+plot.temp = plot.temp[plot.temp <=8]
+hist(plot.temp,
+     breaks=seq(2,8),col='gray',
+     xlab=expression('Cumulative infections (log'[10]*')'),
+     ylab='Proportion of simulations',main='',las=1,xaxt="n",freq=F)
+axis(1,at=seq(2,8,2),labels=c(expression(10^2),expression(10^4),
+                              expression(10^6),expression(10^8)))
+lines(log(rep(sum(cases.US.local),2),base=10),
+      c(0,replicates),
+      col='red',lwd=2)
+mtext("C",side=3,line=0, 
+       at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+       cex=1.2)
+dev.off()
+
+
+## Figure S?? Compare pLocal for fixed R values
+local.list = list(lo = local.lo, med = local.med, hi = local.hi)
+panel.labels = c("A", "B", "C")
+updateDaily = FALSE # turn on Bayesian daily updating
+smoothSpline = TRUE # turn on smoothing spline
+pdf('../plots/supp_fig_r_comparison_plocal.pdf',
+    width=13.5,height=5, pointsize=14)
+par(mfrow=c(1,3))
+for (kk in 1:length(local.list)) {
+    cases.mat = t(matrix(
+        unlist(lapply(local.list[[kk]], function(x) x$cases)),
+        length(local.list[[kk]][[1]]$cases),
+        replicates))
+    p.mat = matrix(NA,nrow(cases.mat),ncol(cases.mat))
+    for(ii in 1:nrow(cases.mat)){
+        alpha.old=1
+        beta.old=1
+        for(jj in 1:ncol(cases.mat)){
+            if(cases.mat[ii,jj]){
+                actual.cases = rbinom(1,cases.mat[ii,jj], sum(propns.ASCF[ii,2:4]))
+                alpha.new = alpha.old+cases.US.local[jj]
+                beta.new = beta.old+actual.cases-cases.US.local[jj]
+                p.mat[ii,jj] =
+                    rbeta(1,alpha.new,max(1,beta.new))
+                if (updateDaily) {
+                    alpha.old=alpha.new
+                    beta.old=beta.new
+                }
+            }
+        }
+        if (smoothSpline) {
+            non.NA.indices = which(!is.na(p.mat[ii,]))
+            if(length(non.NA.indices) > ncol(p.mat) / 3){
+                temp.sp = smooth.spline((1:ncol(p.mat))[non.NA.indices],
+                                        logit(p.mat[ii,non.NA.indices]),
+                                        nknots=floor((ncol(p.mat) - non.NA.indices[1])/7 + 0.5))
+                p.mat[ii,non.NA.indices[1]:ncol(p.mat)] = inv.logit(predict(temp.sp, non.NA.indices[1]:ncol(p.mat))$y)
+            } else {
+                p.mat[ii,non.NA.indices[1]:ncol(p.mat)] = NA
+            }
+        }
+    }
+    plot(
+        as.Date('2019-12-31') + 1:ncol(p.mat),
+        apply(p.mat,2,function(ii)median(ii,na.rm=T)),
+        ylim=c(0,1),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
+        xlim=as.Date('2019-12-31') + c(31,ncol(p.mat)),
+        xlab='Date',ylab=expression('Symptomatics reporting ('*rho[local]*')'),
+        main='')
+    polygon(
+        c(as.Date('2019-12-31') + 1:ncol(p.mat),
+          rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+        c(apply(p.mat,2,function(ii)quantile(ii,0.25,na.rm=T)),
+          rev(apply(p.mat,2,function(ii)quantile(ii,0.75,na.rm=T)))),
+        border=NA,col=rgb(0,0,0,0.25))
+    polygon(
+        c(as.Date('2019-12-31') + 1:ncol(p.mat),
+          rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
+        c(apply(p.mat,2,function(ii)quantile(ii,0.025,na.rm=T)),
+          rev(apply(p.mat,2,function(ii)quantile(ii,0.975,na.rm=T)))),
+        border=NA,col=rgb(0,0,0,0.15))
+    mtext(panel.labels[kk],side=3,line=0, 
+          at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
+          cex=1.2)
+}
+dev.off()
