@@ -339,10 +339,13 @@ sum(sum(cases.US.local)<unlist(lapply(local,function(ll)ll$cum)))/nrow(local.mat
 
 # Figure 1
 # plot distribution of cumulative infections
-# plot all locally acquired infections over time
+## plot all locally acquired infections over time
+wdth = 9.5
+hght = 5.5
 pdf('../plots/figure_1_cumulative_infections_and_infections_daily.pdf',
-    width=9,height=5, pointsize=14)
-par(mfrow=c(1,2))
+    width=wdth/2.54,height=hght/2.54, pointsize=8)
+par(mfrow=c(1,2),
+    mar=c(4.6,4.1,2.1,0.6))
 plot.temp = log(unlist(lapply(local,function(ll)ll$cum)),base=10)
 hist(plot.temp,breaks=seq(2,10),plot=F)$density
 plot.temp = plot.temp[plot.temp <=8]
@@ -363,7 +366,10 @@ plot(
   apply(local.mat,2,function(ii)median(ii,na.rm=T))[31:ncol(local.mat)],
   ylim=c(1,quantile(local.mat[,ncol(local.mat)],0.975)),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
   xlim=as.Date('2019-12-31') + c(31,ncol(local.mat)),
-  xlab='Date',ylab='Infections',main='', log="y")
+  xlab='Date',ylab='',main='', log="y",xaxt="n")
+mtext("Infections",side=2,line=3.5)
+axis(1,at=c(as.Date("2020-02-01"), as.Date("2020-02-15"),as.Date("2020-03-01")),
+     labels=c("Feb 1","Feb 15","Mar 1"))
 ## for (ii in 1:nrow(local.mat)) {
 ##     lines(
 ##         as.Date('2019-12-31') + 31:ncol(local.mat),
@@ -448,11 +454,13 @@ quantile(correlation.reduced,c(0.025,0.5,0.975),na.rm=T)
 # plot locally acquired symptomatic infections over time, alongside number of cases reported in the US
 # plot proportion of locally acquired symptomatic infections reported over time
 # alongside numbers of tests administered in the US
+wdth = 11.5
+hght = 10.5
 pdf('../plots/figure_2_symptomatic_daily_and_symptomatic_detected.pdf',
     ##width=4.5,height=13.8, pointsize=14)
-    width=8,height=7, pointsize=14)
+    width=wdth/2.54,height=hght/2.54, pointsize=8)
 par(mfrow=c(2,2))
-par(mar = c(4, 5, 1.5, 3) + 0.1,
+par(mar = c(4, 4, 2, 4) + 0.1,
     oma = c(0, 0, 0, 0))
 plot(
   as.Date('2019-12-31') + 1:ncol(cases.mat),
@@ -460,7 +468,9 @@ plot(
   ylim=c(0,quantile(cases.mat.obs[,ncol(cases.mat)],0.75)),
   col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
   xlim=as.Date('2019-12-31') + c(31,ncol(cases.mat)),
-  xlab='Date',ylab='Symptomatic infections',main='')
+  xlab='Date',ylab='Symptomatic infections',main='',xaxt="n")
+axis(1,at=c(as.Date("2020-02-01"), as.Date("2020-02-15"),as.Date("2020-03-01")),
+     labels=c("Feb 1","Feb 15","Mar 1"))
 polygon(
   c(as.Date('2019-12-31') + 1:ncol(cases.mat),
     rev(as.Date('2019-12-31') + 1:ncol(cases.mat))),
@@ -501,7 +511,9 @@ plot(
   ylim=c(0,apply(det.cases.mat,2,function(ii)quantile(ii,0.75,na.rm=T))[ncol(cases.mat)]),
   col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
   xlim=as.Date('2019-12-31') + c(31,ncol(det.cases.mat)),
-  xlab='Date',ylab='Reported cases',main='')
+  xlab='Date',ylab='Reported cases',main='',xaxt="n")
+axis(1,at=c(as.Date("2020-02-01"), as.Date("2020-02-15"),as.Date("2020-03-01")),
+     labels=c("Feb 1","Feb 15","Mar 1"))
 polygon(
   c(as.Date('2019-12-31') + 1:ncol(det.cases.mat),
     rev(as.Date('2019-12-31') + 1:ncol(det.cases.mat))),
@@ -536,7 +548,9 @@ plot(
   ylim=c(0,1),col=1,lwd=2,type='l',xaxs='i',yaxs='i',las=1,
   xlim=as.Date('2019-12-31') + c(31,ncol(p.mat)),
   xlab='Date',ylab=expression('Symptomatics reporting ('*rho[local]*')'),
-  main='')
+  main='',xaxt="n")
+axis(1,at=c(as.Date("2020-02-01"), as.Date("2020-02-15"),as.Date("2020-03-01")),
+     labels=c("Feb 1","Feb 15","Mar 1"))
 polygon(
   c(as.Date('2019-12-31') + 1:ncol(p.mat),
     rev(as.Date('2019-12-31') + 1:ncol(p.mat))),
@@ -606,7 +620,10 @@ quantile(rowSums(future.death.mat)/sum(deaths.US.local),c(0.025,0.5,0.975),na.rm
 
 # Figure 3
 # plot future deaths, assuming transmission stops on March 12
-pdf('../plots/figure_3_deaths_forecast.pdf',width=9,height=6,pointsize=14)
+wdth = 9.5
+hght = 5.5
+pdf('../plots/figure_3_deaths_forecast.pdf',width=wdth/2.54,height=hght/2.54,pointsize=8)
+par(mar=c(2.1,4.1,1.1,1.1))
 time.max = 150#dim(local.predict.death)[2]
 death.predict.median = apply(local.predict.death[,], 2, median)
 death.predict.025 = apply(local.predict.death[,], 2, function(x)quantile(x,0.025))

@@ -314,7 +314,8 @@ load("../results/baseline_projections.rda",verbose=T)
 #=============================================================================#
 
 # Figure S1 plot reporting delay distribution
-pdf("../plots/gamma_reporting_delay.pdf", width=4, height=4, pointsize=10)
+pdf("../plots/gamma_reporting_delay.pdf", width=8.5/2.54, height=5.5/2.54, pointsize=8)
+par(mar=c(4.1,4.1,2.1,1.1))
 h = hist(data.delay, plot=F)
 h$counts = h$counts / sum(h$counts)
 plot(h, freq=TRUE, ylab="Relative Frequency",
@@ -333,8 +334,9 @@ cases.mat = t(matrix(
   length(local[[1]]$cases),
   replicates))
 pdf('../plots/smooth_vs_nonsmooth_pLocal.pdf',
-    width=9,height=4.8, pointsize=14)
-par(mfrow=c(1,2))
+    width=9.5/2.54,height=5.5/2.54, pointsize=8)
+par(mfrow=c(1,2),
+    mar=c(0.1+c(4,4,1,1)),oma=c(1,0,1,0))
 for (smoothSpline in c(FALSE, TRUE)) {
     p.mat = matrix(NA,nrow(cases.mat),ncol(cases.mat))
     for(ii in 1:nrow(cases.mat)){
@@ -401,7 +403,7 @@ dev.off()
 alt.import.density=c(rep(0,21),
                      colSums(ts.natl[-which(row.names(ts.natl)=='US'),])/sum(ts.natl[-which(row.names(ts.natl)=='US'),]))
 pdf('../plots/importation_patterns.pdf',
-    width=7,height=7, pointsize=14)
+    width=11/2.54,height=11/2.54, pointsize=8)
 par(mar = c(5, 4, 4, 4) + 0.3)
 barplot(cases.US.imported,ylab='Imported cases',xlab='Date',ylim=c(0,35),
         xaxs='i',yaxs='i',las=1,cex.axis=1.2,cex.lab=1.3,width=0.85)
@@ -458,9 +460,9 @@ local.mat.hi = t(matrix(
   length(local.hi[[1]]$daily),
   replicates))
 
-pdf('../plots/supp_fig_r_comparison_caseloads.pdf',
-    width=13.5,height=5, pointsize=14)
-par(mfrow=c(1,3))
+pdf('../plots/supp_fig_r_comparison_caseloads_and_plocal.pdf',
+    width=11.5/2.54,height=10.5/2.54, pointsize=8)
+par(mfrow=c(2,3))
 plot.temp = log(unlist(lapply(local.lo,function(ll)ll$cum)),base=10)
 hist(plot.temp,breaks=seq(2,10),plot=F)$density
 plot.temp = plot.temp[plot.temp <=8]
@@ -506,17 +508,14 @@ lines(log(rep(sum(cases.US.local),2),base=10),
 mtext("C",side=3,line=0, 
        at=par("usr")[1]+0.05*diff(par("usr")[1:2]),
        cex=1.2)
-dev.off()
-
-
 ## Figure S?? Compare pLocal for fixed R values
 local.list = list(lo = local.lo, med = local.med, hi = local.hi)
-panel.labels = c("A", "B", "C")
+panel.labels = c("D", "E", "F")
 updateDaily = FALSE # turn on Bayesian daily updating
 smoothSpline = TRUE # turn on smoothing spline
-pdf('../plots/supp_fig_r_comparison_plocal.pdf',
-    width=13.5,height=5, pointsize=14)
-par(mfrow=c(1,3))
+## pdf('../plots/supp_fig_r_comparison_plocal.pdf',
+##     width=9.5/2.54,height=5.5/2.54, pointsize=8)
+## par(mfrow=c(1,3))
 for (kk in 1:length(local.list)) {
     cases.mat = t(matrix(
         unlist(lapply(local.list[[kk]], function(x) x$cases)),
