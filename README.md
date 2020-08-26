@@ -1,9 +1,9 @@
 ﻿# sarscov2_unobserved
 
 
-This repository contains code to reproduce results from the following pre-print
+This repository contains code to reproduce results from the following publication
 
-TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek (2020) **Estimating unobserved SARS-CoV-2 infections in the United States**. *medRxiv* doi:[10.1101/2020.03.15.20036582](https://www.medrxiv.org/content/10.1101/2020.03.15.20036582v1)
+TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek (2020) **Estimating unobserved SARS-CoV-2 infections in the United States**. *medRxiv* doi:[10.1073/pnas.2005476117](https://doi.org/10.1073/pnas.2005476117)
 
 
 
