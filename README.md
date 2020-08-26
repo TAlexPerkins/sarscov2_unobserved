@@ -3,7 +3,7 @@
 
 This repository contains code to reproduce results from the following publication
 
-TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek (2020) **Estimating unobserved SARS-CoV-2 infections in the United States**. *medRxiv* doi:[10.1073/pnas.2005476117](https://doi.org/10.1073/pnas.2005476117)
+TA Perkins<sup>&#42;</sup>, SM Cavany<sup>&#42;</sup>, SM Moore<sup>&#42;</sup>, RJ Oidtman, A Lerch, M Poterek (2020) **Estimating unobserved SARS-CoV-2 infections in the United States**. *PNAS* doi:[10.1073/pnas.2005476117](https://doi.org/10.1073/pnas.2005476117)
 
 
 
